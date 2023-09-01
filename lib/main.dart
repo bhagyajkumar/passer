@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:passer/scanned_ticket.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -55,15 +56,6 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -91,20 +83,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
@@ -119,80 +100,130 @@ class _MyHomePageState extends State<MyHomePage> {
             return ListView.builder(
               itemCount: passes.length,
               itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
+                return InkWell(
+                  onLongPress: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return Dialog(
+                          child: FittedBox(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Text(
+                                          "Would you like to delete this pass"),
+                                    ),
+                                    Row(
+                                      children: [
+                                        ElevatedButton(
+                                            onPressed: () async {
+                                              await Supabase.instance.client
+                                                  .from("passes")
+                                                  .delete()
+                                                  .match({
+                                                "id": passes[index]["id"]
+                                              });
+                                              Navigator.maybePop(context);
+                                            },
+                                            child: const Text("Delete")),
+                                        ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.of(context).maybePop();
+                                            },
+                                            child: const Text("Cancel")),
+                                      ],
+                                    )
+                                  ]),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Ink(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Icon(Icons.person),
-                          !passes[index]["is_used"]
-                              ? const Icon(
-                                  Icons.check,
-                                  color: Colors.green,
-                                )
-                              : const Icon(Icons.wrong_location)
+                          Row(
+                            children: [
+                              const Icon(Icons.person),
+                              !passes[index]["is_used"]
+                                  ? const Icon(
+                                      Icons.check,
+                                      color: Colors.green,
+                                    )
+                                  : const Icon(Icons.wrong_location)
+                            ],
+                          ),
+                          Text(
+                            passes[index]["name"],
+                          ),
+                          ElevatedButton(
+                              onPressed: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return SimpleDialog(
+                                        title: const Text("Food Pass"),
+                                        children: [
+                                          Screenshot(
+                                            controller: sscontroller,
+                                            child: Container(
+                                              color: Colors.white,
+                                              child: Column(
+                                                children: [
+                                                  const Text("Food Pass",
+                                                      style: TextStyle(
+                                                          fontSize: 28)),
+                                                  SizedBox(
+                                                    height: 200,
+                                                    width: 200,
+                                                    child: Center(
+                                                      child: QrImageView(
+                                                        data: passes[index]
+                                                            ["id"],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          IconButton(
+                                              onPressed: () async {
+                                                dynamic image =
+                                                    await sscontroller
+                                                        .capture();
+                                                final tempDir =
+                                                    await getTemporaryDirectory();
+                                                File file = await File(
+                                                        '${tempDir.path}/image.png')
+                                                    .create();
+                                                file.writeAsBytesSync(image);
+                                                final _result =
+                                                    await Share.shareXFiles(
+                                                  [
+                                                    XFile(
+                                                        '${tempDir.path}/image.png')
+                                                  ],
+                                                );
+                                              },
+                                              icon: const Icon(Icons.share))
+                                        ],
+                                      );
+                                    });
+                              },
+                              child: const Text("Get pass"))
                         ],
                       ),
-                      Text(
-                        passes[index]["name"],
-                      ),
-                      ElevatedButton(
-                          onPressed: () {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return SimpleDialog(
-                                    title: const Text("Food Pass"),
-                                    children: [
-                                      Screenshot(
-                                        controller: sscontroller,
-                                        child: Container(
-                                          color: Colors.white,
-                                          child: Column(
-                                            children: [
-                                              const Text("Food Pass",
-                                                  style:
-                                                      TextStyle(fontSize: 28)),
-                                              SizedBox(
-                                                height: 200,
-                                                width: 200,
-                                                child: Center(
-                                                  child: QrImageView(
-                                                    data: passes[index]["id"],
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                      IconButton(
-                                          onPressed: () async {
-                                            dynamic image =
-                                                await sscontroller.capture();
-                                            final tempDir =
-                                                await getTemporaryDirectory();
-                                            File file = await File(
-                                                    '${tempDir.path}/image.png')
-                                                .create();
-                                            file.writeAsBytesSync(image);
-                                            final _result =
-                                                await Share.shareXFiles(
-                                              [
-                                                XFile(
-                                                    '${tempDir.path}/image.png')
-                                              ],
-                                            );
-                                          },
-                                          icon: const Icon(Icons.share))
-                                    ],
-                                  );
-                                });
-                          },
-                          child: const Text("Get pass"))
-                    ],
+                    ),
                   ),
                 );
               },
@@ -212,8 +243,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            controller?.pauseCamera();
-                            controller?.resumeCamera();
+                            controller?.toggleFlash();
                           },
                           child: SizedBox(
                             width: 200,
@@ -224,7 +254,14 @@ class _MyHomePageState extends State<MyHomePage> {
                                   this.controller = controller;
                                   controller.scannedDataStream
                                       .listen((scanData) {
-                                    Navigator.maybePop(context);
+                                    controller.dispose();
+                                    controller.stopCamera();
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(builder: (context) {
+                                      return ScannedPassPage(
+                                        data: scanData.code ?? "",
+                                      );
+                                    }));
                                   });
                                 }),
                           ),

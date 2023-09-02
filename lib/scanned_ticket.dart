@@ -40,56 +40,53 @@ class _ScannedPassPageState extends State<ScannedPassPage> {
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.yellow,
-              title: Text("Loading Ticket Data"),
+              title: const Text("Loading Ticket Data"),
             ),
-            body: Center(child: CircularProgressIndicator()),
+            body: const Center(child: CircularProgressIndicator()),
           );
         } else if (snapshot.hasError) {
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.red,
-              title: Text("Error loading ticket data"),
+              title: const Text("Error loading ticket data"),
             ),
           );
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.red,
-              title: Text("Invalid Ticket"),
+              title: const Text("Invalid Ticket"),
             ),
           );
         } else {
           final data = snapshot.data![0];
-          print(data.toString());
           return Scaffold(
             appBar: AppBar(
               backgroundColor: Colors.green,
               title: Text(data["name"]),
             ),
-            body: Container(
-              child: Column(
-                children: [
-                  Spacer(flex: 1),
-                  Center(
-                    heightFactor: 2,
-                    child: ElevatedButton(
-                        onPressed: () async {
-                          print(data["id"]);
-                          await Supabase.instance.client.from("passes").update(
-                              {"is_used": true}).match({"id": data["id"]});
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return SimpleDialog(
-                                children: [Text("verified")],
-                              );
-                            },
-                          );
-                        },
-                        child: Text("Close Pass")),
-                  )
-                ],
-              ),
+            body: Column(
+              children: [
+                const Spacer(flex: 1),
+                Center(
+                  heightFactor: 2,
+                  child: ElevatedButton(
+                      onPressed: () async {
+                        await Supabase.instance.client.from("passes").update(
+                            {"is_used": true}).match({"id": data["id"]});
+                        // ignore: use_build_context_synchronously
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return const SimpleDialog(
+                              children: [Text("verified")],
+                            );
+                          },
+                        );
+                      },
+                      child: const Text("Close Pass")),
+                )
+              ],
             ),
           );
         }

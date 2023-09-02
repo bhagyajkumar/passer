@@ -8,9 +8,8 @@ import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PassPage extends StatefulWidget {
-  const PassPage({super.key, required this.title});
+  const PassPage({super.key});
 
-  final String title;
   @override
   State<PassPage> createState() => _PassPageState();
 }
@@ -41,7 +40,7 @@ class _PassPageState extends State<PassPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Text("Passer"),
       ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: _passesStream,

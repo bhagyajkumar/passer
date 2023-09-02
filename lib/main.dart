@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:passer/login_page.dart';
 import 'package:passer/pass_page.dart';
+import 'package:passer/splash_page.dart';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -22,8 +24,13 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.cyan),
         useMaterial3: true,
       ),
-      home: const PassPage(title: 'Passer'),
       debugShowCheckedModeBanner: false,
+      initialRoute: "/",
+      routes: {
+        "/": (context) => const SplashPage(),
+        "/login": (context) => const LoginPage(),
+        "/passes": (context) => const PassPage()
+      },
     );
   }
 }

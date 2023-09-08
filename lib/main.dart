@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:passer/events_page.dart';
 import 'package:passer/login_page.dart';
 import 'package:passer/pass_page.dart';
 import 'package:passer/splash_page.dart';
@@ -29,7 +30,8 @@ class MyApp extends StatelessWidget {
       routes: {
         "/": (context) => const SplashPage(),
         "/login": (context) => const LoginPage(),
-        "/passes": (context) => const PassPage()
+        "/passes": (context) => const PassPage(),
+        "/events": (context) => const EventsPage()
       },
     );
   }

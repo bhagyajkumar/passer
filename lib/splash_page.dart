@@ -21,7 +21,7 @@ class _SplashPageState extends State<SplashPage> {
     if (session == null) {
       Navigator.of(context).pushReplacementNamed("/login");
     } else {
-      Navigator.of(context).pushReplacementNamed("/passes");
+      Navigator.of(context).pushReplacementNamed("/events");
     }
   }
 

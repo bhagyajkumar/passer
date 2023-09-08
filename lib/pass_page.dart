@@ -22,9 +22,6 @@ class _PassPageState extends State<PassPage> {
   final _formKey = GlobalKey<FormState>();
   final ScreenshotController sscontroller = ScreenshotController();
 
-  final _passesStream =
-      Supabase.instance.client.from("passes").stream(primaryKey: ["id"]);
-
   @override
   void reassemble() {
     super.reassemble();
@@ -37,6 +34,14 @@ class _PassPageState extends State<PassPage> {
 
   @override
   Widget build(BuildContext context) {
+    final arguments =
+        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    print(arguments);
+
+    final _passesStream = Supabase.instance.client
+        .from("passes")
+        .stream(primaryKey: ["id"]).eq("event", arguments["eventId"]);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -154,7 +159,8 @@ class _PassPageState extends State<PassPage> {
                                             .from("passes")
                                             .insert({
                                           "name": _name,
-                                          "details": _details
+                                          "details": _details,
+                                          "event": arguments["eventId"]
                                         });
                                       }
                                     },
